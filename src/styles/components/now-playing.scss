@@ -56,17 +56,25 @@
   }
 
   @media only screen and (min-width: 1080px) {
-    #flex-flow: row nowrap;
-    padding: 10%;
-
-    &__cover,
-    &__details {
-      width: 50%;
-      max-width: 495px;
+   .now-playing {
+    padding: var(--spacing-l); /* Maintain padding from base */
     }
 
+    &__cover {
+    max-width: 960px; /* Keep album art size consistent */
+    width: 100%;
+    }
+    
     &__details {
-      text-align: left;
+    max-width: 960px; /* Match cover width for alignment */
+    width: 100%;
+    text-align: center; /* Center text */
+    padding: var(--spacing-m);
+    }
+
+    &__track,
+    &__artists {
+    display: block; /* Ensure each takes its own line */
     }
   }
 }
