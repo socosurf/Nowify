@@ -8,7 +8,7 @@
   background-color: var(--colour-background-now-playing);
   color: var(--color-text-primary);
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: row nowrap;
   height: 100%;
   padding: var(--spacing-l);
   width: 100%;
@@ -21,8 +21,8 @@
   }
 
   &__cover {
-    min-width: 960px;
     max-width: 960px;
+    width: 100%;
   }
 
   &__image {
