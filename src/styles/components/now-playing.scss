@@ -8,83 +8,86 @@
   background-color: var(--colour-background-now-playing);
   color: var(--color-text-primary);
   display: flex;
-  flex-flow: column nowrap;
+  flex-flow: column nowrap; /* Always stack vertically */
   height: 100%;
-  padding: var(--spacing-l);
   width: 100%;
+  padding: var(--spacing-l);
   align-items: center; /* Center children horizontally */
   justify-content: center; /* Center children vertically */
-
-  &__cover,
-  &__details {
-    padding: var(--spacing-m);
-    text-align: center;
-    width: 100%;
-    max-width: 960px; /* Constrain both to same max width */
-  }
+  box-sizing: border-box;
 
   &__cover {
+    padding: var(--spacing-m);
+    width: 100%;
+    max-width: 960px; /* Large but constrained image */
     display: flex;
-    justify-content: center; /* Ensure image is centered */
+    justify-content: center; /* Center image within cover */
   }
 
   &__image {
     box-shadow: 1px 1px 16px -2px rgba(0, 0, 0, .3);
     height: auto;
     width: 100%;
-    max-width: 960px; /* Match max-width for consistency */
+    max-width: 960px; /* Ensure image doesn’t overflow */
   }
 
   &__details {
-    text-align: center;
+    padding: var(--spacing-m);
+    width: 100%;
+    max-width: 960px; /* Match cover for alignment */
+    text-align: center; /* Center text */
   }
 
   &__track {
     font-weight: var(--font-weight-heading);
-    display: block; /* Ensure title takes its own line */
+    display: block; /* Title on its own line */
+    margin-bottom: var(--spacing-s, 8px); /* Space between title and artist */
   }
 
   &__artists {
     opacity: 0.8;
-    display: block; /* Ensure artist takes its own line */
+    display: block; /* Artist on its own line */
   }
 
-  &--active {
-    align-items: center;
-    justify-content: center;
-  }
-
+  &--active,
   &--idle {
     display: flex;
+    flex-flow: column nowrap; /* Override any row layout */
     align-items: center;
     justify-content: center;
   }
 
   @media only screen and (min-width: 1080px) {
     .now-playing {
-      flex-flow: column nowrap; /* Explicitly enforce column layout */
+      flex-flow: column nowrap; /* Enforce vertical stacking */
       padding: var(--spacing-l);
-      align-items: center; /* Center content */
-      justify-content: center; /* Vertically center content */
+      align-items: center; /* Center everything */
+      justify-content: center;
     }
 
     &__cover {
-      max-width: 960px;
       width: 100%;
+      max-width: 960px;
+      padding: var(--spacing-m);
       display: flex;
       justify-content: center;
     }
 
-    &__details {
-      max-width: 960px;
+    &__image {
       width: 100%;
-      text-align: center;
+      max-width: 960px;
+    }
+
+    &__details {
+      width: 100%;
+      max-width: 960px;
       padding: var(--spacing-m);
+      text-align: center;
     }
 
     &__track,
     &__artists {
-      display: block; /* Ensure each takes its own line */
+      display: block;
     }
   }
 }
