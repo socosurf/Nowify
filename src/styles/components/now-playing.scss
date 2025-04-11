@@ -8,28 +8,31 @@
   background-color: var(--colour-background-now-playing);
   color: var(--color-text-primary);
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: column nowrap;
   height: 100%;
   padding: var(--spacing-l);
   width: 100%;
+  align-items: center; /* Center children horizontally */
+  justify-content: center; /* Center children vertically */
 
   &__cover,
   &__details {
     padding: var(--spacing-m);
     text-align: center;
     width: 100%;
+    max-width: 960px; /* Constrain both to same max width */
   }
 
   &__cover {
-    max-width: 960px;
-    width: 100%;
+    display: flex;
+    justify-content: center; /* Ensure image is centered */
   }
 
   &__image {
     box-shadow: 1px 1px 16px -2px rgba(0, 0, 0, .3);
     height: auto;
-    max-width: 210vw;
     width: 100%;
+    max-width: 960px; /* Match max-width for consistency */
   }
 
   &__details {
@@ -38,10 +41,12 @@
 
   &__track {
     font-weight: var(--font-weight-heading);
+    display: block; /* Ensure title takes its own line */
   }
 
   &__artists {
     opacity: 0.8;
+    display: block; /* Ensure artist takes its own line */
   }
 
   &--active {
@@ -56,25 +61,30 @@
   }
 
   @media only screen and (min-width: 1080px) {
-   .now-playing {
-    padding: var(--spacing-l); /* Maintain padding from base */
+    .now-playing {
+      flex-flow: column nowrap; /* Explicitly enforce column layout */
+      padding: var(--spacing-l);
+      align-items: center; /* Center content */
+      justify-content: center; /* Vertically center content */
     }
 
     &__cover {
-    max-width: 960px; /* Keep album art size consistent */
-    width: 100%;
+      max-width: 960px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
     }
-    
+
     &__details {
-    max-width: 960px; /* Match cover width for alignment */
-    width: 100%;
-    text-align: center; /* Center text */
-    padding: var(--spacing-m);
+      max-width: 960px;
+      width: 100%;
+      text-align: center;
+      padding: var(--spacing-m);
     }
 
     &__track,
     &__artists {
-    display: block; /* Ensure each takes its own line */
+      display: block; /* Ensure each takes its own line */
     }
   }
 }
