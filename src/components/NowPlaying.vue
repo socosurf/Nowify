@@ -23,11 +23,14 @@
       </div>
     </div>
     <div v-else class="now-playing now-playing--idle">
-      <img
-        src="@/assets/no-music.jpg"
-        alt="No music playing"
-        class="now-playing__idle-image"
-      />
+      <transition-group name="fade" tag="div" class="idle-image-container">
+        <img
+          :key="currentImageIndex"
+          :src="idleImages[currentImageIndex]"
+          alt="No music playing"
+          class="now-playing__idle-image"
+        />
+      </transition-group>
     </div>
   </div>
 </template>
@@ -51,7 +54,16 @@ export default {
       playerResponse: {},
       playerData: this.getEmptyPlayer(),
       colourPalette: '',
-      swatches: []
+      swatches: [],
+      idleImages: [
+        require('@/assets/no-music-1.jpg'),
+        require('@/assets/no-music-2.jpg'),
+        require('@/assets/no-music-3.jpg'),
+        require('@/assets/no-music-4.jpg'),
+        require('@/assets/no-music-5.jpg')
+      ],
+      currentImageIndex: 0,
+      imageCycleInterval: null
     }
   },
 
@@ -61,16 +73,66 @@ export default {
     }
   },
 
+  watch: {
+    player: {
+      handler(newPlayer) {
+        if (newPlayer && newPlayer.trackTitle) {
+          if (this.imageCycleInterval) {
+            clearInterval(this.imageCycleInterval)
+            this.imageCycleInterval = null
+            console.log('Stopped image cycling'); // Debug
+          }
+        } else {
+          if (!this.imageCycleInterval) {
+            this.startImageCycle()
+          }
+        }
+      },
+      deep: true
+    },
+
+    auth(newVal) {
+      if (newVal.status === false) {
+        console.log('Auth invalid, stopping poll');
+        clearInterval(this.pollPlaying)
+      }
+    },
+
+    playerResponse() {
+      this.handleNowPlaying()
+    },
+
+    playerData() {
+      console.log('playerData changed:', this.playerData);
+      this.getAlbumColours()
+    }
+  },
+
   mounted() {
-    console.log('NowPlaying mounted'); // Debug
+    console.log('NowPlaying mounted');
     this.setDataInterval()
+    if (!(this.player && this.player.trackTitle)) {
+      this.startImageCycle()
+    }
   },
 
   beforeDestroy() {
     clearInterval(this.pollPlaying)
+    if (this.imageCycleInterval) {
+      clearInterval(this.imageCycleInterval)
+    }
   },
 
   methods: {
+    startImageCycle() {
+      if (this.idleImages.length === 0) return;
+      this.imageCycleInterval = setInterval(() => {
+        this.currentImageIndex = (this.currentImageIndex + 1) % this.idleImages.length
+        console.log('Cycled to image index:', this.currentImageIndex); // Debug
+      }, 60000) // Change every 60 seconds
+      console.log('Started image cycling'); // Debug
+    },
+
     async getNowPlaying() {
       let data = {}
       try {
@@ -90,16 +152,16 @@ export default {
         if (response.status === 204) {
           data = this.getEmptyPlayer()
           this.playerData = data
-          console.log('No active device (204)', data); // Debug
+          console.log('No active device (204)', data);
           this.$emit('spotifyTrackUpdated', data)
           return
         }
 
         data = await response.json()
         this.playerResponse = data
-        console.log('Fetched playerResponse:', data); // Debug
+        console.log('Fetched playerResponse:', data);
       } catch (error) {
-        console.error('getNowPlaying error:', error); // Debug
+        console.error('getNowPlaying error:', error);
         this.handleExpiredToken()
         data = this.getEmptyPlayer()
         this.playerData = data
@@ -109,25 +171,25 @@ export default {
 
     getNowPlayingClass() {
       const playerClass = this.player && this.player.trackTitle ? 'active' : 'idle'
-      console.log('getNowPlayingClass:', playerClass); // Debug
+      console.log('getNowPlayingClass:', playerClass);
       return `now-playing--${playerClass}`
     },
 
     getAlbumColours() {
       if (!this.player?.trackAlbum?.image) {
-        console.log('No album image for colors'); // Debug
+        console.log('No album image for colors');
         return
       }
-      console.log('Extracting colors from:', this.player.trackAlbum.image); // Debug
+      console.log('Extracting colors from:', this.player.trackAlbum.image);
       Vibrant.from(this.player.trackAlbum.image)
         .quality(1)
         .clearFilters()
         .getPalette()
         .then(palette => {
-          console.log('Got palette:', palette); // Debug
+          console.log('Got palette:', palette);
           this.handleAlbumPalette(palette)
         })
-        .catch(err => console.error('Vibrant error:', err)); // Debug
+        .catch(err => console.error('Vibrant error:', err));
     },
 
     getEmptyPlayer() {
@@ -147,7 +209,7 @@ export default {
     },
 
     setAppColours() {
-      console.log('Setting colors:', this.colourPalette); // Debug
+      console.log('Setting colors:', this.colourPalette);
       document.documentElement.style.setProperty(
         '--color-text-primary',
         this.colourPalette.text
@@ -159,7 +221,7 @@ export default {
     },
 
     handleNowPlaying() {
-      console.log('handleNowPlaying, playerResponse:', this.playerResponse); // Debug
+      console.log('handleNowPlaying, playerResponse:', this.playerResponse);
       if (
         this.playerResponse.error?.status === 401 ||
         this.playerResponse.error?.status === 400
@@ -170,7 +232,7 @@ export default {
 
       if (!this.playerResponse.item) {
         this.playerData = this.getEmptyPlayer()
-        console.log('No track, set empty player:', this.playerData); // Debug
+        console.log('No track, set empty player:', this.playerData);
         this.$emit('spotifyTrackUpdated', this.playerData)
         return
       }
@@ -185,10 +247,9 @@ export default {
         }
       }
 
-      // Only update if track changed to avoid unnecessary renders
       if (newTrackData.trackId !== this.playerData.trackId) {
         this.playerData = newTrackData
-        console.log('Updated playerData:', this.playerData); // Debug
+        console.log('Updated playerData:', this.playerData);
         this.$emit('spotifyTrackUpdated', this.playerData)
       }
     },
@@ -206,43 +267,31 @@ export default {
     },
 
     handleExpiredToken() {
-      console.log('Handling expired token'); // Debug
+      console.log('Handling expired token');
       clearInterval(this.pollPlaying)
       this.$emit('requestRefreshToken')
-    }
-  },
-
-  watch: {
-    auth(newVal) {
-      if (newVal.status === false) {
-        console.log('Auth invalid, stopping poll'); // Debug
-        clearInterval(this.pollPlaying)
-      }
-    },
-
-    playerResponse() {
-      this.handleNowPlaying()
-    },
-
-    playerData() {
-      console.log('playerData changed:', this.playerData); // Debug
-      this.getAlbumColours()
     }
   }
 }
 </script>
 
 <style scoped>
-/* Minimal inline styles to avoid SCSS conflicts */
+/* Styles for status text and idle image slideshow */
 .now-playing__status {
   text-align: center;
   margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 1.9rem; /* Adjust if needed after checking SCSS */
+  font-size: 1.8rem; /* Matches artist text size */
   font-weight: 400;
   color: var(--color-text-primary);
+}
+
+.idle-image-container {
+  position: relative;
+  width: 1080px;
+  height: 1920px;
 }
 
 .now-playing__idle-image {
@@ -255,7 +304,15 @@ export default {
   left: 0;
 }
 
-/* Rely on now-playing.scss for other styles */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 2s ease-in-out; /* Slow, subtle fade */
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
 
 <style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
