@@ -240,7 +240,7 @@ export default {
 }
 
 .now-playing__status-text {
-  font-size: 1.5rem; /* Adjust if needed after checking SCSS */
+  font-size: 1.9rem; /* Adjust if needed after checking SCSS */
   font-weight: 400;
   color: var(--color-text-primary);
 }
