@@ -80,7 +80,7 @@ export default {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
             this.imageCycleInterval = null
-            console.log('Stopped image cycling'); // Debug
+            console.log('Stopped image cycling');
           }
         } else {
           if (!this.imageCycleInterval) {
@@ -128,9 +128,9 @@ export default {
       if (this.idleImages.length === 0) return;
       this.imageCycleInterval = setInterval(() => {
         this.currentImageIndex = (this.currentImageIndex + 1) % this.idleImages.length
-        console.log('Cycled to image index:', this.currentImageIndex); // Debug
+        console.log('Cycled to image index:', this.currentImageIndex);
       }, 60000) // Change every 60 seconds
-      console.log('Started image cycling'); // Debug
+      console.log('Started image cycling');
     },
 
     async getNowPlaying() {
@@ -277,36 +277,58 @@ export default {
 
 <style scoped>
 /* Styles for status text and idle image slideshow */
+#app {
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden; /* Prevent scrollbars */
+  position: relative;
+}
+
+.now-playing {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Ensure no overflow in active/idle states */
+}
+
+.now-playing--idle {
+  background: transparent; /* Remove any background color */
+  overflow: hidden;
+}
+
 .now-playing__status {
   text-align: center;
   margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 1.8rem; /* Matches artist text size */
+  font-size: 1.8rem;
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
 .idle-image-container {
-  position: relative;
   width: 1080px;
   height: 1920px;
+  position: relative;
+  overflow: hidden;
+  background: transparent; /* No colored bar */
 }
 
 .now-playing__idle-image {
   width: 1080px;
   height: 1920px;
   object-fit: cover;
-  display: block;
   position: absolute;
   top: 0;
   left: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 2s ease-in-out; /* Slow, subtle fade */
+  transition: opacity 2s ease-in-out; /* Smooth, subtle fade */
 }
 
 .fade-enter,
