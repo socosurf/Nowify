@@ -1,14 +1,16 @@
-
-
-
-/*
 <template>
   <div id="app">
+    <!-- Show track details when a song is loaded (playing or paused) -->
     <div
-      v-if="player.playing"
+      v-if="player"
       class="now-playing"
       :class="getNowPlayingClass()"
     >
+      <div class="now-playing__status">
+        <h3 class="now-playing__status-text">
+          {{ playerResponse.is_playing ? 'Now Playing' : 'Currently Paused' }}
+        </h3>
+      </div>
       <div class="now-playing__cover">
         <img
           :src="player.trackAlbum.image"
@@ -21,8 +23,13 @@
         <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
       </div>
     </div>
-    <div v-else class="now-playing" :class="getNowPlayingClass()">
-      <h1 class="now-playing__idle-heading">No music is playing 😔</h1>
+    <!-- Show image when no song is loaded -->
+    <div v-else class="now-playing now-playing--idle">
+      <img
+        src="@/assets/no-music.jpg"
+        alt="No music playing"
+        class="now-playing__idle-image"
+      />
     </div>
   </div>
 </template>
@@ -91,12 +98,11 @@ export default {
          * Fetch error.
          */
         if (!response.ok) {
-          throw new Error(`An error has occured: ${response.status}`)
+          throw new Error(`An error has occurred: ${response.status}`)
         }
 
         /**
          * Spotify returns a 204 when no current device session is found.
-         * The connection was successful but there's no content to return.
          */
         if (response.status === 204) {
           data = this.getEmptyPlayer()
@@ -128,24 +134,17 @@ export default {
      * @return {String}
      */
     getNowPlayingClass() {
-      const playerClass = this.player.playing ? 'active' : 'idle'
-      return `now-playing--${playerClass}`
+      return this.player ? 'active' : 'idle'
     },
 
     /**
      * Get the colour palette from the album cover.
      */
     getAlbumColours() {
-      /**
-       * No image (rare).
-       */
       if (!this.player.trackAlbum?.image) {
         return
       }
 
-      /**
-       * Run node-vibrant to get colours.
-       */
       Vibrant.from(this.player.trackAlbum.image)
         .quality(1)
         .clearFilters()
@@ -161,7 +160,6 @@ export default {
      */
     getEmptyPlayer() {
       return {
-        playing: false,
         trackAlbum: {},
         trackArtists: [],
         trackId: '',
@@ -203,32 +201,21 @@ export default {
         this.playerResponse.error?.status === 400
       ) {
         this.handleExpiredToken()
-
         return
       }
 
       /**
-       * Player is active, but user has paused.
+       * No track is playing or device is inactive.
        */
-      if (this.playerResponse.is_playing === false) {
+      if (!this.playerResponse.item) {
         this.playerData = this.getEmptyPlayer()
-
         return
       }
 
       /**
-       * The newly fetched track is the same as our stored
-       * one, we don't want to update the DOM yet.
-       */
-      if (this.playerResponse.item?.id === this.playerData.trackId) {
-        return
-      }
-
-      /**
-       * Store the current active track.
+       * Store the current track (playing or paused).
        */
       this.playerData = {
-        playing: this.playerResponse.is_playing,
         trackArtists: this.playerResponse.item.artists.map(
           artist => artist.name
         ),
@@ -242,15 +229,11 @@ export default {
     },
 
     /**
-     * Handle newly stored colour palette:
-     * - Map data to readable format
-     * - Get and store random colour combination.
+     * Handle newly stored colour palette.
      */
     handleAlbumPalette(palette) {
       let albumColours = Object.keys(palette)
-        .filter(item => {
-          return item === null ? null : item
-        })
+        .filter(item => item !== null)
         .map(colour => {
           return {
             text: palette[colour].getTitleTextColor(),
@@ -276,26 +259,18 @@ export default {
       this.$emit('requestRefreshToken')
     }
   },
+
   watch: {
-    /**
-     * Watch the auth object returned from Spotify.
-     */
-    auth: function(oldVal, newVal) {
+    auth: function(newVal) {
       if (newVal.status === false) {
         clearInterval(this.pollPlaying)
       }
     },
 
-    /**
-     * Watch the returned track object.
-     */
     playerResponse: function() {
       this.handleNowPlaying()
     },
 
-    /**
-     * Watch our locally stored track data.
-     */
     playerData: function() {
       this.$emit('spotifyTrackUpdated', this.playerData)
 
@@ -307,5 +282,53 @@ export default {
 }
 </script>
 
-<style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
-*/
+<style scoped>
+/* Ensure full-screen layout */
+#app {
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+}
+
+.now-playing {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Status message styling */
+.now-playing__status {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.now-playing__status-text {
+  font-size: 1.5rem; /* Smaller than track (h1) and artists (h2) */
+  font-weight: 400;
+  color: var(--color-text-primary);
+}
+
+/* Idle state image */
+.now-playing__idle-image {
+  width: 1080px;
+  height: 1920px;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Adjust existing styles to prevent overlap */
+.now-playing__cover {
+  margin-bottom: 20px;
+}
+
+.now-playing__details {
+  text-align: center;
+}
+</style>
+
