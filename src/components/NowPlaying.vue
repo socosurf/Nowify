@@ -62,7 +62,7 @@ export default {
   },
 
   mounted() {
-    console.log('NowPlaying component mounted'); // Debug
+    console.log('NowPlaying mounted'); // Debug
     this.setDataInterval()
   },
 
@@ -114,16 +114,20 @@ export default {
     },
 
     getAlbumColours() {
-      if (!this.player.trackAlbum?.image) {
+      if (!this.player?.trackAlbum?.image) {
+        console.log('No album image for colors'); // Debug
         return
       }
+      console.log('Extracting colors from:', this.player.trackAlbum.image); // Debug
       Vibrant.from(this.player.trackAlbum.image)
         .quality(1)
         .clearFilters()
         .getPalette()
         .then(palette => {
+          console.log('Got palette:', palette); // Debug
           this.handleAlbumPalette(palette)
         })
+        .catch(err => console.error('Vibrant error:', err)); // Debug
     },
 
     getEmptyPlayer() {
@@ -143,6 +147,7 @@ export default {
     },
 
     setAppColours() {
+      console.log('Setting colors:', this.colourPalette); // Debug
       document.documentElement.style.setProperty(
         '--color-text-primary',
         this.colourPalette.text
@@ -154,7 +159,7 @@ export default {
     },
 
     handleNowPlaying() {
-      console.log('handleNowPlaying called, playerResponse:', this.playerResponse); // Debug
+      console.log('handleNowPlaying, playerResponse:', this.playerResponse); // Debug
       if (
         this.playerResponse.error?.status === 401 ||
         this.playerResponse.error?.status === 400
@@ -166,55 +171,61 @@ export default {
       if (!this.playerResponse.item) {
         this.playerData = this.getEmptyPlayer()
         console.log('No track, set empty player:', this.playerData); // Debug
+        this.$emit('spotifyTrackUpdated', this.playerData)
         return
       }
 
-      this.playerData = {
+      const newTrackData = {
         trackArtists: this.playerResponse.item.artists.map(artist => artist.name),
         trackTitle: this.playerResponse.item.name,
         trackId: this.playerResponse.item.id,
         trackAlbum: {
           title: this.playerResponse.item.album.name,
-          image: this.playerResponse.item.album.images[0].url
+          image: this.playerResponse.item.album.images[0]?.url || ''
         }
       }
-      console.log('Updated playerData:', this.playerData); // Debug
+
+      // Only update if track changed to avoid unnecessary renders
+      if (newTrackData.trackId !== this.playerData.trackId) {
+        this.playerData = newTrackData
+        console.log('Updated playerData:', this.playerData); // Debug
+        this.$emit('spotifyTrackUpdated', this.playerData)
+      }
     },
 
     handleAlbumPalette(palette) {
-      let albumColours = Object.keys(palette)
+      const albumColours = Object.keys(palette)
         .filter(item => item !== null)
-        .map(colour => {
-          return {
-            text: palette[colour].getTitleTextColor(),
-            background: palette[colour].getHex()
-          }
-        })
-
+        .map(colour => ({
+          text: palette[colour].getTitleTextColor(),
+          background: palette[colour].getHex()
+        }))
       this.swatches = albumColours
-      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)]
+      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { text: '#ffffff', background: '#000000' }
       this.setAppColours()
     },
 
     handleExpiredToken() {
+      console.log('Handling expired token'); // Debug
       clearInterval(this.pollPlaying)
       this.$emit('requestRefreshToken')
     }
   },
 
   watch: {
-    auth: function(newVal) {
+    auth(newVal) {
       if (newVal.status === false) {
+        console.log('Auth invalid, stopping poll'); // Debug
         clearInterval(this.pollPlaying)
       }
     },
 
-    playerResponse: function() {
+    playerResponse() {
       this.handleNowPlaying()
     },
 
-    playerData: function() {
-      this.$emit('spotifyTrackUpdated', this.playerData)
+    playerData() {
+      console.log('playerData changed:', this.playerData); // Debug
       this.getAlbumColours()
     }
   }
@@ -222,28 +233,14 @@ export default {
 </script>
 
 <style scoped>
-#app {
-  width: 1080px;
-  height: 1920px;
-  overflow: hidden;
-}
-
-.now-playing {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
+/* Minimal inline styles to avoid SCSS conflicts */
 .now-playing__status {
   text-align: center;
   margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 1.5rem;
+  font-size: 1.5rem; /* Adjust if needed after checking SCSS */
   font-weight: 400;
   color: var(--color-text-primary);
 }
@@ -258,16 +255,7 @@ export default {
   left: 0;
 }
 
-.now-playing__cover {
-  margin-bottom: 20px;
-}
-
-.now-playing__details {
-  text-align: center;
-}
-
-/* Ensure idle state is full-screen */
-.now-playing--idle {
-  position: relative;
-}
+/* Rely on now-playing.scss for other styles */
 </style>
+
+<style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
