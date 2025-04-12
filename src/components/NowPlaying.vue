@@ -276,22 +276,43 @@ export default {
 </script>
 
 <style scoped>
-/* Styles for status text and idle image slideshow */
+/* Styles for full-screen slideshow and status text */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 #app {
   width: 1080px;
   height: 1920px;
-  overflow: hidden; /* Prevent scrollbars */
-  position: relative;
+  min-width: 1080px;
+  min-height: 1920px;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
 }
 
 .now-playing {
   width: 100%;
   height: 100%;
-  overflow: hidden; /* Ensure no overflow in active/idle states */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .now-playing--idle {
-  background: transparent; /* Remove any background color */
+  width: 1080px;
+  height: 1920px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -309,14 +330,22 @@ export default {
 .idle-image-container {
   width: 1080px;
   height: 1920px;
-  position: relative;
+  min-width: 1080px;
+  min-height: 1920px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
-  background: transparent; /* No colored bar */
+  background: transparent;
 }
 
 .now-playing__idle-image {
   width: 1080px;
   height: 1920px;
+  min-width: 1080px;
+  min-height: 1920px;
   object-fit: cover;
   position: absolute;
   top: 0;
@@ -328,7 +357,7 @@ export default {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 2s ease-in-out; /* Smooth, subtle fade */
+  transition: opacity 2s ease-in-out;
 }
 
 .fade-enter,
