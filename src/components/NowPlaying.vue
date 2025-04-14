@@ -333,6 +333,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 #app {
@@ -355,7 +356,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: relative; /* For absolute positioning of children */
+  position: relative;
+  z-index: 0; /* Base layer */
 }
 
 .now-playing--idle {
@@ -373,6 +375,7 @@ html, body {
   left: 0;
   right: 0;
   text-align: center;
+  z-index: 10; /* Above art */
 }
 
 .now-playing__status-text {
@@ -386,6 +389,7 @@ html, body {
   top: 250px; /* Upper quarter, confirmed correct */
   left: 50%;
   transform: translateX(-50%);
+  z-index: 5; /* Below text */
 }
 
 .now-playing__image {
@@ -396,11 +400,13 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 600px !important; /* Below album art (~250–550px), increased to clear overlap */
+  top: 650px !important; /* Below album art (~250–550px), increased to clear overlap */
   left: 0;
   right: 0;
   text-align: center;
-  padding-top: 20px; /* Extra spacing */
+  z-index: 10; /* Above art */
+  margin: 0;
+  padding: 0;
 }
 
 .now-playing__track {
@@ -410,7 +416,7 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin-bottom: 10px; /* Space below title */
+  margin: 0 0 20px 0; /* Space below title */
 }
 
 .now-playing__track-main,
@@ -427,7 +433,7 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin-top: 10px; /* Space above artist */
+  margin: 20px 0 0 0; /* Space above artist */
 }
 
 .idle-image-container {
