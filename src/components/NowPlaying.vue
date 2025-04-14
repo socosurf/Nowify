@@ -333,7 +333,6 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  box-sizing: border-box;
 }
 
 #app {
@@ -348,7 +347,6 @@ html, body {
   margin: 0;
   padding: 0;
   background: transparent;
-  transform: none !important;
 }
 
 .now-playing {
@@ -357,9 +355,6 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: relative !important;
-  z-index: 0;
-  transform: none !important;
 }
 
 .now-playing--idle {
@@ -372,74 +367,32 @@ html, body {
 }
 
 .now-playing__status {
-  position: absolute;
-  top: 125px; /* Midpoint between top (0px) and album art (~250px) */
-  left: 0;
-  right: 0;
   text-align: center;
-  z-index: 20;
+  margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem !important;
+  font-size: 3.2rem !important; /* Matches artist */
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
-.now-playing__cover {
-  position: absolute;
-  top: 250px; /* Upper quarter, confirmed correct */
-  left: 50%;
-  transform: translateX(-50%) !important;
-  z-index: 5;
-}
-
-.now-playing__image {
-  width: 300px;
-  height: 300px;
-  max-width: 600px;
-  max-height: 600px;
-  object-fit: cover;
-}
-
-.now-playing__details {
-  position: absolute !important;
-  top: 700px !important; /* Below album art (~250–550px or ~250–850px) */
-  left: 0 !important;
-  right: 0 !important;
-  text-align: center !important;
-  z-index: 20 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  transform: none !important;
-  display: block !important;
-}
-
 .now-playing__track {
-  font-size: 6rem !important;
+  font-size: 4.8rem !important; /* 1.5x artist */
   color: var(--color-text-primary);
-  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.2;
-  margin: 0 0 20px 0 !important;
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); /* Adjusted for larger text */
 }
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 6rem !important;
+  font-size: 4.8rem !important; /* 1.5x artist */
   color: var(--color-text-primary);
-  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
-  line-height: 1.2;
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
 }
 
 .now-playing__artists {
-  font-size: 4rem !important;
+  font-size: 3.2rem !important; /* Matches status */
   color: var(--color-text-primary);
-  white-space: normal;
-  word-break: break-word;
-  line-height: 1.2;
-  margin: 20px 0 0 0 !important;
 }
 
 .idle-image-container {
@@ -480,3 +433,5 @@ html, body {
   opacity: 0;
 }
 </style>
+
+<style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
