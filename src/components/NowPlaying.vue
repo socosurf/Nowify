@@ -18,7 +18,10 @@
         />
       </div>
       <div class="now-playing__details">
-        <h1 class="now-playing__track" v-text="player.trackTitle"></h1>
+        <h1
+          class="now-playing__track"
+          :inner-html.prop="formattedTrackTitle"
+        ></h1>
         <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
       </div>
     </div>
@@ -70,6 +73,25 @@ export default {
   computed: {
     getTrackArtists() {
       return this.player.trackArtists.join(', ')
+    },
+
+    formattedTrackTitle() {
+      if (!this.player || !this.player.trackTitle) return '';
+      const title = this.player.trackTitle;
+      // Match title with optional parenthetical at the end (e.g., "Song (Remix)")
+      const match = title.match(/(.*?)(?:\s*\(([^)]+)\))?$/);
+      if (!match) {
+        // No parentheses, return plain title
+        return `<span class="now-playing__track-main">${title}</span>`;
+      }
+      const mainTitle = match[1].trim();
+      const parenthetical = match[2] ? `(${match[2]})` : '';
+      if (!parenthetical) {
+        // No parenthetical part, just main title
+        return `<span class="now-playing__track-main">${mainTitle}</span>`;
+      }
+      // Return main title and parenthetical on new line
+      return `<span class="now-playing__track-main">${mainTitle}</span><br><span class="now-playing__track-parenthetical">${parenthetical}</span>`;
     }
   },
 
@@ -350,19 +372,26 @@ html, body {
 }
 
 .now-playing__status-text {
-  font-size: 2.4rem; /* Matches artist text */
+  font-size: 3.2rem; /* Larger, matches title and artist */
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
 .now-playing__track {
-  font-size: 2.4rem; /* Bigger, matches artist and status */
+  font-size: 3.2rem; /* Larger than original */
   color: var(--color-text-primary);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Subtle drop shadow */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.now-playing__track-main,
+.now-playing__track-parenthetical {
+  font-size: 3.2rem; /* Match main title */
+  color: var(--color-text-primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .now-playing__artists {
-  font-size: 2.4rem; /* Bigger, matches title and status */
+  font-size: 3.2rem; /* Larger, matches title and status */
   color: var(--color-text-primary);
 }
 
