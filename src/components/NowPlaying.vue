@@ -1,3 +1,4 @@
+
 <template>
   <div id="app">
     <div
@@ -79,7 +80,7 @@ export default {
       if (!this.player || !this.player.trackTitle) return '';
       const title = this.player.trackTitle;
       // Match title with optional parenthetical at the end (e.g., "Song (Remix)")
-      const match = title.match(/(.*?)(?:\s*\(([^)]+)\))?$/);
+      const match = title.match(/(.*?)(?:\s*\(([^)]+\)))?$/);
       if (!match) {
         // No parentheses, return plain title
         return `<span class="now-playing__track-main">${title}</span>`;
@@ -372,26 +373,26 @@ html, body {
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem; /* Larger, matches title and artist */
+  font-size: 3.2rem !important; /* Matches artist */
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
 .now-playing__track {
-  font-size: 3.2rem; /* Larger than original */
+  font-size: 4.8rem !important; /* 1.5x artist */
   color: var(--color-text-primary);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); /* Adjusted for larger text */
 }
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 3.2rem; /* Match main title */
+  font-size: 4.8rem !important; /* 1.5x artist */
   color: var(--color-text-primary);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
 }
 
 .now-playing__artists {
-  font-size: 3.2rem; /* Larger, matches title and status */
+  font-size: 3.2rem !important; /* Matches status */
   color: var(--color-text-primary);
 }
 
