@@ -76,22 +76,22 @@ export default {
     },
 
     formattedTrackTitle() {
-      if (!this.player || !this.player.trackTitle) return '';
-      const title = this.player.trackTitle;
+      if (!this.player || !this.player.trackTitle) return ''
+      const title = this.player.trackTitle
       // Match title with optional parenthetical at the end (e.g., "Song (Remix)")
-      const match = title.match(/(.*?)(?:\s*\(([^)]+\)))?$/);
+      const match = title.match(/(.*?)(?:\s*\(([^)]+\)))?$/)
       if (!match) {
         // No parentheses, return plain title
-        return `<span class="now-playing__track-main">${title}</span>`;
+        return `<span class="now-playing__track-main">${title}</span>`
       }
-      const mainTitle = match[1].trim();
-      const parenthetical = match[2] ? `(${match[2]})` : '';
+      const mainTitle = match[1].trim()
+      const parenthetical = match[2] ? `(${match[2]})` : ''
       if (!parenthetical) {
         // No parenthetical part, just main title
-        return `<span class="now-playing__track-main">${mainTitle}</span>`;
+        return `<span class="now-playing__track-main">${mainTitle}</span>`
       }
       // Return main title and parenthetical on new line
-      return `<span class="now-playing__track-main">${mainTitle}</span><br><span class="now-playing__track-parenthetical">${parenthetical}</span>`;
+      return `<span class="now-playing__track-main">${mainTitle}</span><br><span class="now-playing__track-parenthetical">${parenthetical}</span>`
     }
   },
 
@@ -101,8 +101,8 @@ export default {
         if (newPlayer && newPlayer.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
-            imageCycleInterval = null
-            console.log('Stopped image cycling');
+            this.imageCycleInterval = null
+            console.log('Stopped image cycling')
           }
         } else {
           if (!this.imageCycleInterval) {
@@ -115,7 +115,7 @@ export default {
 
     auth(newVal) {
       if (newVal.status === false) {
-        console.log('Auth invalid, stopping poll');
+        console.log('Auth invalid, stopping poll')
         clearInterval(this.pollPlaying)
       }
     },
@@ -125,13 +125,13 @@ export default {
     },
 
     playerData() {
-      console.log('playerData changed:', this.playerData);
+      console.log('playerData changed:', this.playerData)
       this.getAlbumColours()
     }
   },
 
   mounted() {
-    console.log('NowPlaying mounted');
+    console.log('NowPlaying mounted')
     this.setDataInterval()
     if (!(this.player && this.player.trackTitle)) {
       this.startImageCycle()
@@ -147,12 +147,12 @@ export default {
 
   methods: {
     startImageCycle() {
-      if (this.idleImages.length === 0) return;
+      if (this.idleImages.length === 0) return
       this.imageCycleInterval = setInterval(() => {
         this.currentImageIndex = (this.currentImageIndex + 1) % this.idleImages.length
-        console.log('Cycled to image index:', this.currentImageIndex);
+        console.log('Cycled to image index:', this.currentImageIndex)
       }, 60000) // Change every 60 seconds
-      console.log('Started image cycling');
+      console.log('Started image cycling')
     },
 
     async getNowPlaying() {
@@ -174,16 +174,16 @@ export default {
         if (response.status === 204) {
           data = this.getEmptyPlayer()
           this.playerData = data
-          console.log('No active device (204)', data);
+          console.log('No active device (204)', data)
           this.$emit('spotifyTrackUpdated', data)
           return
         }
 
         data = await response.json()
         this.playerResponse = data
-        console.log('Fetched playerResponse:', data);
+        console.log('Fetched playerResponse:', data)
       } catch (error) {
-        console.error('getNowPlaying error:', error);
+        console.error('getNowPlaying error:', error)
         this.handleExpiredToken()
         data = this.getEmptyPlayer()
         this.playerData = data
@@ -193,25 +193,25 @@ export default {
 
     getNowPlayingClass() {
       const playerClass = this.player && this.player.trackTitle ? 'active' : 'idle'
-      console.log('getNowPlayingClass:', playerClass);
+      console.log('getNowPlayingClass:', playerClass)
       return `now-playing--${playerClass}`
     },
 
     getAlbumColours() {
       if (!this.player?.trackAlbum?.image) {
-        console.log('No album image for colors');
+        console.log('No album image for colors')
         return
       }
-      console.log('Extracting colors from:', this.player.trackAlbum.image);
+      console.log('Extracting colors from:', this.player.trackAlbum.image)
       Vibrant.from(this.player.trackAlbum.image)
         .quality(1)
         .clearFilters()
         .getPalette()
         .then(palette => {
-          console.log('Got palette:', palette);
+          console.log('Got palette:', palette)
           this.handleAlbumPalette(palette)
         })
-        .catch(err => console.error('Vibrant error:', err));
+        .catch(err => console.error('Vibrant error:', err))
     },
 
     getEmptyPlayer() {
@@ -231,7 +231,7 @@ export default {
     },
 
     setAppColours() {
-      console.log('Setting colors:', this.colourPalette);
+      console.log('Setting colors:', this.colourPalette)
       document.documentElement.style.setProperty(
         '--color-text-primary',
         this.colourPalette.text
@@ -243,7 +243,7 @@ export default {
     },
 
     handleNowPlaying() {
-      console.log('handleNowPlaying, playerResponse:', this.playerResponse);
+      console.log('handleNowPlaying, playerResponse:', this.playerResponse)
       if (
         this.playerResponse.error?.status === 401 ||
         this.playerResponse.error?.status === 400
@@ -254,7 +254,7 @@ export default {
 
       if (!this.playerResponse.item) {
         this.playerData = this.getEmptyPlayer()
-        console.log('No track, set empty player:', this.playerData);
+        console.log('No track, set empty player:', this.playerData)
         this.$emit('spotifyTrackUpdated', this.playerData)
         return
       }
@@ -271,7 +271,7 @@ export default {
 
       if (newTrackData.trackId !== this.playerData.trackId) {
         this.playerData = newTrackData
-        console.log('Updated playerData:', this.playerData);
+        console.log('Updated playerData:', this.playerData)
         this.$emit('spotifyTrackUpdated', this.playerData)
       }
     },
@@ -279,24 +279,26 @@ export default {
     // Convert hex to HSL and return lightness (0-100)
     hexToHSL(hex) {
       // Remove # and convert to RGB
-      let r = 0, g = 0, b = 0;
+      let r = 0
+      let g = 0
+      let b = 0
       if (hex.length === 7) {
-        r = parseInt(hex.slice(1, 3), 16);
-        g = parseInt(hex.slice(3, 5), 16);
-        b = parseInt(hex.slice(5, 7), 16);
+        r = parseInt(hex.slice(1, 3), 16)
+        g = parseInt(hex.slice(3, 5), 16)
+        b = parseInt(hex.slice(5, 7), 16)
       }
-      r /= 255;
-      g /= 255;
-      b /= 255;
+      r /= 255
+      g /= 255
+      b /= 255
 
       // Find min and max for lightness
-      const max = Math.max(r, g, b);
-      const min = Math.min(r, g, b);
-      let l = (max + min) / 2;
+      const max = Math.max(r, g, b)
+      const min = Math.min(r, g, b)
+      let l = (max + min) / 2
 
       // Convert lightness to percentage
-      l = l * 100;
-      return l;
+      l = l * 100
+      return l
     },
 
     handleAlbumPalette(palette) {
@@ -304,20 +306,20 @@ export default {
         .filter(item => item !== null)
         .map(colour => ({
           background: palette[colour].getHex()
-        }));
-      this.swatches = albumColours;
-      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' };
+        }))
+      this.swatches = albumColours
+      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
 
       // Set text color based on background lightness
-      const lightness = this.hexToHSL(this.colourPalette.background);
-      console.log('Background lightness:', lightness); // Debug
-      this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff';
+      const lightness = this.hexToHSL(this.colourPalette.background)
+      console.log('Background lightness:', lightness)
+      this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff'
 
-      this.setAppColours();
+      this.setAppColours()
     },
 
     handleExpiredToken() {
-      console.log('Handling expired token');
+      console.log('Handling expired token')
       clearInterval(this.pollPlaying)
       this.$emit('requestRefreshToken')
     }
@@ -398,13 +400,12 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 1300px !important; /* Increased to clear album art, centered between ~550px and 1920px */
-  left: 0 !important;
-  right: 0 !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+  top: 1350px !important; /* Centered between ~550px and 1920px, clears album art */
+  left: 50% !important;
+  transform: translateX(-50%) !important;
   text-align: center !important;
   z-index: 15 !important;
+  margin: 0 !important;
   padding: 0 !important;
 }
 
