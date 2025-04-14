@@ -254,16 +254,44 @@ export default {
       }
     },
 
+    // Convert hex to HSL and return lightness (0-100)
+    hexToHSL(hex) {
+      // Remove # and convert to RGB
+      let r = 0, g = 0, b = 0;
+      if (hex.length === 7) {
+        r = parseInt(hex.slice(1, 3), 16);
+        g = parseInt(hex.slice(3, 5), 16);
+        b = parseInt(hex.slice(5, 7), 16);
+      }
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      // Find min and max for lightness
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let l = (max + min) / 2;
+
+      // Convert lightness to percentage
+      l = l * 100;
+      return l;
+    },
+
     handleAlbumPalette(palette) {
       const albumColours = Object.keys(palette)
         .filter(item => item !== null)
         .map(colour => ({
-          text: palette[colour].getTitleTextColor(),
           background: palette[colour].getHex()
-        }))
-      this.swatches = albumColours
-      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { text: '#ffffff', background: '#000000' }
-      this.setAppColours()
+        }));
+      this.swatches = albumColours;
+      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' };
+
+      // Set text color based on background lightness
+      const lightness = this.hexToHSL(this.colourPalette.background);
+      console.log('Background lightness:', lightness); // Debug
+      this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff';
+
+      this.setAppColours();
     },
 
     handleExpiredToken() {
