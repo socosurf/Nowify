@@ -383,7 +383,7 @@ html, body {
 
 .now-playing__cover {
   position: absolute;
-  top: 250px; /* Upper quarter of 1920px */
+  top: 250px; /* Upper quarter, confirmed correct */
   left: 50%;
   transform: translateX(-50%);
 }
@@ -396,16 +396,16 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 600px; /* Below album art (~250–550px) */
+  top: 570px; /* Below album art (~250–550px), centered */
   left: 0;
   right: 0;
   text-align: center;
 }
 
 .now-playing__track {
-  font-size: 12rem !important; /* Increased from 9.6rem */
+  font-size: 6rem !important; /* Halved from 12rem */
   color: var(--color-text-primary);
-  text-shadow: 5px 5px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
@@ -413,19 +413,19 @@ html, body {
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 12rem !important;
+  font-size: 6rem !important;
   color: var(--color-text-primary);
-  text-shadow: 5px 5px 8px rgba(0, 0, 0, 0.5);
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
   line-height: 1.2;
 }
 
 .now-playing__artists {
-  font-size: 8rem !important; /* Increased from 6.4rem */
+  font-size: 4rem !important; /* Halved from 8rem */
   color: var(--color-text-primary);
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin-top: 30px; /* Space below large title */
+  margin-top: 20px; /* Space below title */
 }
 
 .idle-image-container {
