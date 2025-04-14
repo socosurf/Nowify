@@ -20,7 +20,7 @@
       <div class="now-playing__details">
         <h1
           class="now-playing__track"
-          :inner-html.prop="formattedTrackTitle"
+          v-text="formattedTrackTitle"
         ></h1>
         <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
       </div>
@@ -76,22 +76,7 @@ export default {
     },
 
     formattedTrackTitle() {
-      if (!this.player || !this.player.trackTitle) return ''
-      const title = this.player.trackTitle
-      // Match title with optional parenthetical at the end (e.g., "Song (Remix)")
-      const match = title.match(/(.*?)(?:\s*\(([^)]+\)))?$/)
-      if (!match) {
-        // No parentheses, return plain title
-        return `<span class="now-playing__track-main">${title}</span>`
-      }
-      const mainTitle = match[1].trim()
-      const parenthetical = match[2] ? `(${match[2]})` : ''
-      if (!parenthetical) {
-        // No parenthetical part, just main title
-        return `<span class="now-playing__track-main">${mainTitle}</span>`
-      }
-      // Return main title and parenthetical on new line
-      return `<span class="now-playing__track-main">${mainTitle}</span><br><span class="now-playing__track-parenthetical">${parenthetical}</span>`
+      return this.player?.trackTitle || ''
     }
   },
 
@@ -418,14 +403,6 @@ html, body {
   line-height: 1.2;
   margin: 0 0 20px 0 !important;
   width: 100%;
-}
-
-.now-playing__track-main,
-.now-playing__track-parenthetical {
-  font-size: 6rem !important;
-  color: var(--color-text-primary);
-  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
-  line-height: 1.2;
 }
 
 .now-playing__artists {
