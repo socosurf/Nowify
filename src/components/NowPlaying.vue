@@ -304,7 +304,7 @@ export default {
 </script>
 
 <style scoped>
-/* Styles for full-screen slideshow and status text */
+/* Styles for full-screen slideshow and text adjustments */
 html, body {
   margin: 0;
   padding: 0;
@@ -350,8 +350,19 @@ html, body {
 }
 
 .now-playing__status-text {
-  font-size: 1.8rem;
+  font-size: 2.4rem; /* Matches artist text */
   font-weight: 400;
+  color: var(--color-text-primary);
+}
+
+.now-playing__track {
+  font-size: 2.4rem; /* Bigger, matches artist and status */
+  color: var(--color-text-primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Subtle drop shadow */
+}
+
+.now-playing__artists {
+  font-size: 2.4rem; /* Bigger, matches title and status */
   color: var(--color-text-primary);
 }
 
