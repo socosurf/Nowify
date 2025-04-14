@@ -78,26 +78,20 @@ export default {
     formattedTrackTitle() {
       if (!this.player || !this.player.trackTitle) return '';
       const title = this.player.trackTitle;
-      // Escape HTML to prevent XSS or rendering issues
-      const escapeHtml = (str) => {
-        return str
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
-      };
-      // Match title with optional parenthetical at the end
+      // Match title with optional parenthetical at the end (e.g., "Song (Remix)")
       const match = title.match(/(.*?)(?:\s*\(([^)]+\)))?$/);
       if (!match) {
-        return `<span class="now-playing__track-main">${escapeHtml(title)}</span>`;
+        // No parentheses, return plain title
+        return `<span class="now-playing__track-main">${title}</span>`;
       }
       const mainTitle = match[1].trim();
       const parenthetical = match[2] ? `(${match[2]})` : '';
       if (!parenthetical) {
-        return `<span class="now-playing__track-main">${escapeHtml(mainTitle)}</span>`;
+        // No parenthetical part, just main title
+        return `<span class="now-playing__track-main">${mainTitle}</span>`;
       }
-      return `<span class="now-playing__track-main">${escapeHtml(mainTitle)}</span><br><span class="now-playing__track-parenthetical">${escapeHtml(parenthetical)}</span>`;
+      // Return main title and parenthetical on new line
+      return `<span class="now-playing__track-main">${mainTitle}</span><br><span class="now-playing__track-parenthetical">${parenthetical}</span>`;
     }
   },
 
@@ -361,6 +355,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative; /* For absolute positioning of children */
 }
 
 .now-playing--idle {
@@ -373,32 +368,64 @@ html, body {
 }
 
 .now-playing__status {
+  position: absolute;
+  top: 125px; /* Midpoint between top (0px) and album art (~250px) */
+  left: 0;
+  right: 0;
   text-align: center;
-  margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem !important; /* Matches artist */
+  font-size: 3.2rem !important;
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
+.now-playing__cover {
+  position: absolute;
+  top: 250px; /* Upper quarter of 1920px */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.now-playing__image {
+  width: 300px; /* Assuming Spotify image size */
+  height: 300px;
+  object-fit: cover;
+}
+
+.now-playing__details {
+  position: absolute;
+  top: 600px; /* Below album art (~250–550px) */
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .now-playing__track {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 12rem !important; /* Increased from 9.6rem */
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); /* Adjusted for larger text */
+  text-shadow: 5px 5px 8px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 12rem !important;
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 5px 5px 8px rgba(0, 0, 0, 0.5);
+  line-height: 1.2;
 }
 
 .now-playing__artists {
-  font-size: 3.2rem !important; /* Matches status */
+  font-size: 8rem !important; /* Increased from 6.4rem */
   color: var(--color-text-primary);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
+  margin-top: 30px; /* Space below large title */
 }
 
 .idle-image-container {
