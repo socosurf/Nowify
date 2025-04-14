@@ -389,26 +389,28 @@ html, body {
 }
 
 .now-playing__image {
-  width: 300px; /* Assuming Spotify image size */
+  width: 300px; /* Spotify image size, adjustable */
   height: 300px;
   object-fit: cover;
 }
 
 .now-playing__details {
   position: absolute;
-  top: 570px; /* Below album art (~250–550px), centered */
+  top: 600px !important; /* Below album art (~250–550px), increased to clear overlap */
   left: 0;
   right: 0;
   text-align: center;
+  padding-top: 20px; /* Extra spacing */
 }
 
 .now-playing__track {
-  font-size: 6rem !important; /* Halved from 12rem */
+  font-size: 6rem !important;
   color: var(--color-text-primary);
   text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
+  margin-bottom: 10px; /* Space below title */
 }
 
 .now-playing__track-main,
@@ -420,12 +422,12 @@ html, body {
 }
 
 .now-playing__artists {
-  font-size: 4rem !important; /* Halved from 8rem */
+  font-size: 4rem !important;
   color: var(--color-text-primary);
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin-top: 20px; /* Space below title */
+  margin-top: 10px; /* Space above artist */
 }
 
 .idle-image-container {
