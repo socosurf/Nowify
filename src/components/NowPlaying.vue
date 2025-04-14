@@ -355,6 +355,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative; /* For absolute positioning */
 }
 
 .now-playing--idle {
@@ -367,32 +368,64 @@ html, body {
 }
 
 .now-playing__status {
+  position: absolute;
+  top: 125px; /* Midpoint between top (0px) and album art (~250px) */
+  left: 0;
+  right: 0;
   text-align: center;
-  margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem !important; /* Matches artist */
+  font-size: 3.2rem !important;
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
+.now-playing__cover {
+  position: absolute;
+  top: 250px; /* Upper quarter */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.now-playing__image {
+  width: 300px; /* Spotify image size */
+  height: 300px;
+  object-fit: cover;
+}
+
+.now-playing__details {
+  position: absolute;
+  top: 570px !important; /* Below album art (~250–550px) */
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .now-playing__track {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 6rem !important; /* Requested size */
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); /* Adjusted for larger text */
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
 }
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 6rem !important;
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.5);
+  line-height: 1.2;
 }
 
 .now-playing__artists {
-  font-size: 3.2rem !important; /* Matches status */
+  font-size: 4rem !important; /* Requested size */
   color: var(--color-text-primary);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.2;
+  margin-top: 20px; /* Space below title */
 }
 
 .idle-image-container {
