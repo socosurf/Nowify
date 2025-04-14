@@ -1,4 +1,3 @@
-
 <template>
   <div id="app">
     <div
@@ -157,6 +156,42 @@ export default {
     },
 
     async getNowPlaying() {
+      let data = {}
+      try {
+        const response = await fetch(
+          `${this.endpoints.base}/${this.endpoints.nowPlaying}`,
+          {
+            headers: {
+              Authorization: `Bearer ${this.auth.accessToken}`
+            }
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error(`An error has occurred: ${response.status}`)
+        }
+
+        if (response.status === 204) {
+          data = this.getEmptyPlayer()
+          this.playerData = data
+          console.log('No active device (204)', data);
+          this.$emit('spotifyTrackUpdated', data)
+          return
+        }
+
+        data = await response.json()
+        this.playerResponse = data
+        console.log('Fetched playerResponse:', data);
+      } catch (error) {
+        console.error('getNowPlaying error:', error);
+        this.handleExpiredToken()
+        data = this.getEmptyPlayer()
+        this.playerData = data
+        this.$emit('spotifyTrackUpdated', data)
+      }
+    },
+
+ худрары для альбома: 
       let data = {}
       try {
         const response = await fetch(
@@ -356,6 +391,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  position: relative; /* For absolute positioning of children */
 }
 
 .now-playing--idle {
@@ -368,32 +404,61 @@ html, body {
 }
 
 .now-playing__status {
+  position: absolute;
+  top: 240px; /* Centered between top (0px) and album art (~480px) */
+  left: 0;
+  right: 0;
   text-align: center;
-  margin-bottom: 10px;
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem !important; /* Matches artist */
+  font-size: 3.2rem !important;
   font-weight: 400;
   color: var(--color-text-primary);
 }
 
+.now-playing__cover {
+  position: absolute;
+  top: 480px; /* Shifted up halfway */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.now-playing__image {
+  width: 300px; /* Assuming Spotify image size */
+  height: 300px;
+  object-fit: cover;
+}
+
+.now-playing__details {
+  position: absolute;
+  top: 800px; /* Below album art, adjusted for large text */
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .now-playing__track {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 9.6rem !important; /* Doubled from 4.8rem */
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5); /* Adjusted for larger text */
+  text-shadow: 4px 4px 6px rgba(0, 0, 0, 0.5);
+  white-space: normal;
+  word-break: break-word;
 }
 
 .now-playing__track-main,
 .now-playing__track-parenthetical {
-  font-size: 4.8rem !important; /* 1.5x artist */
+  font-size: 9.6rem !important;
   color: var(--color-text-primary);
-  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+  text-shadow: 4px 4px 6px rgba(0, 0, 0, 0.5);
 }
 
 .now-playing__artists {
-  font-size: 3.2rem !important; /* Matches status */
+  font-size: 6.4rem !important; /* Doubled from 3.2rem */
   color: var(--color-text-primary);
+  white-space: normal;
+  word-break: break-word;
+  margin-top: 20px; /* Space below title */
 }
 
 .idle-image-container {
