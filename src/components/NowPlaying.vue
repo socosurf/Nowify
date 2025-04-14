@@ -348,6 +348,7 @@ html, body {
   margin: 0;
   padding: 0;
   background: transparent;
+  transform: none !important;
 }
 
 .now-playing {
@@ -356,8 +357,9 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: relative;
-  z-index: 0; /* Base layer */
+  position: relative !important;
+  z-index: 0;
+  transform: none !important;
 }
 
 .now-playing--idle {
@@ -375,7 +377,7 @@ html, body {
   left: 0;
   right: 0;
   text-align: center;
-  z-index: 10; /* Above art */
+  z-index: 20;
 }
 
 .now-playing__status-text {
@@ -388,25 +390,29 @@ html, body {
   position: absolute;
   top: 250px; /* Upper quarter, confirmed correct */
   left: 50%;
-  transform: translateX(-50%);
-  z-index: 5; /* Below text */
+  transform: translateX(-50%) !important;
+  z-index: 5;
 }
 
 .now-playing__image {
-  width: 300px; /* Spotify image size, adjustable */
+  width: 300px;
   height: 300px;
+  max-width: 600px;
+  max-height: 600px;
   object-fit: cover;
 }
 
 .now-playing__details {
-  position: absolute;
-  top: 650px !important; /* Below album art (~250–550px), increased to clear overlap */
-  left: 0;
-  right: 0;
-  text-align: center;
-  z-index: 10; /* Above art */
-  margin: 0;
-  padding: 0;
+  position: absolute !important;
+  top: 700px !important; /* Below album art (~250–550px or ~250–850px) */
+  left: 0 !important;
+  right: 0 !important;
+  text-align: center !important;
+  z-index: 20 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  display: block !important;
 }
 
 .now-playing__track {
@@ -416,7 +422,7 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin: 0 0 20px 0; /* Space below title */
+  margin: 0 0 20px 0 !important;
 }
 
 .now-playing__track-main,
@@ -433,7 +439,7 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin: 20px 0 0 0; /* Space above artist */
+  margin: 20px 0 0 0 !important;
 }
 
 .idle-image-container {
@@ -474,5 +480,3 @@ html, body {
   opacity: 0;
 }
 </style>
-
-<style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
