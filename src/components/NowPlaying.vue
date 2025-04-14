@@ -101,7 +101,7 @@ export default {
         if (newPlayer && newPlayer.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
-            this.imageCycleInterval = null
+            imageCycleInterval = null
             console.log('Stopped image cycling');
           }
         } else {
@@ -355,7 +355,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: relative; /* For absolute positioning */
+  position: relative !important; /* For absolute positioning */
 }
 
 .now-playing--idle {
@@ -398,12 +398,14 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 1235px !important; /* Midpoint between album art bottom (~550px) and screen bottom (1920px) */
-  left: 0;
-  right: 0;
-  text-align: center;
-  transform: translateY(-50%) !important; /* Center text block vertically */
-  z-index: 10;
+  top: 1300px !important; /* Increased to clear album art, centered between ~550px and 1920px */
+  left: 0 !important;
+  right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  text-align: center !important;
+  z-index: 15 !important;
+  padding: 0 !important;
 }
 
 .now-playing__track {
@@ -413,7 +415,8 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin: 0;
+  margin: 0 0 20px 0 !important;
+  width: 100%;
 }
 
 .now-playing__track-main,
@@ -430,7 +433,8 @@ html, body {
   white-space: normal;
   word-break: break-word;
   line-height: 1.2;
-  margin-top: 20px;
+  margin: 0 !important;
+  width: 100%;
 }
 
 .idle-image-container {
