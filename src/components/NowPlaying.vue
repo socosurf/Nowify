@@ -7,9 +7,9 @@
     >
       <div class="now-playing__status-container">
         <div class="now-playing__status">
-          <h3 class="now-playing__status-text">
-            {{ playerResponse.is_playing ? 'Now Playing' : 'Currently Paused' }}
-          </h3>
+          <span class="now-playing__status-text">
+            {{ playerResponse.is_playing ? '⏵︎' : '⏸︎' }}
+          </span>
         </div>
       </div>
       <div class="now-playing__cover">
@@ -374,9 +374,10 @@ html, body {
 }
 
 .now-playing__status-text {
-  font-size: 3.2rem !important;
+  font-size: 4rem !important; /* Larger for icon clarity */
   font-weight: 400;
   color: var(--color-text-primary);
+  line-height: 1;
 }
 
 .now-playing__cover {
@@ -395,7 +396,7 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 1200px !important; /* Raised from 1350px, clears album art */
+  top: 1250px !important; /* Pushed down from 1200px */
   left: 50% !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
