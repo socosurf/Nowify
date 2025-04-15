@@ -5,10 +5,12 @@
       class="now-playing"
       :class="getNowPlayingClass()"
     >
-      <div class="now-playing__status">
-        <h3 class="now-playing__status-text">
-          {{ playerResponse.is_playing ? 'Now Playing' : 'Currently Paused' }}
-        </h3>
+      <div class="now-playing__status-container">
+        <div class="now-playing__status">
+          <h3 class="now-playing__status-text">
+            {{ playerResponse.is_playing ? 'Now Playing' : 'Currently Paused' }}
+          </h3>
+        </div>
       </div>
       <div class="now-playing__cover">
         <img
@@ -354,12 +356,20 @@ html, body {
   overflow: hidden;
 }
 
+.now-playing__status-container {
+  position: absolute;
+  top: 0;
+  height: 250px; /* From screen top to album art top */
+  width: 100%;
+}
+
 .now-playing__status {
   position: absolute;
-  top: 125px; /* Midpoint between top (0px) and album art (~250px) */
-  left: 0;
-  right: 0;
+  top: 50%; /* Center in 0–250px */
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
+  width: 100%;
   z-index: 10;
 }
 
@@ -385,7 +395,7 @@ html, body {
 
 .now-playing__details {
   position: absolute;
-  top: 1350px !important; /* Centered between ~550px and 1920px, clears album art */
+  top: 1200px !important; /* Raised from 1350px, clears album art */
   left: 50% !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
