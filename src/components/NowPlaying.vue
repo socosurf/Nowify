@@ -20,10 +20,7 @@
         />
       </div>
       <div class="now-playing__details">
-        <h1
-          class="now-playing__track"
-          v-text="formattedTrackTitle"
-        ></h1>
+        <h1 class="now-playing__track" v-text="formattedTrackTitle"></h1>
         <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
       </div>
     </div>
@@ -174,7 +171,9 @@ export default {
         this.handleExpiredToken()
         data = this.getEmptyPlayer()
         this.playerData = data
-        this.$emit('spotifyTrackUpdated', data)
+        this
+
+.$emit('spotifyTrackUpdated', data)
       }
     },
 
@@ -304,14 +303,12 @@ export default {
       const refreshed = await this.refreshAccessToken()
       if (!refreshed) {
         console.log('Redirecting to login due to refresh failure')
-        // Optionally emit to parent for login redirect
         this.$emit('authFailed')
       }
     },
 
     // Convert hex to HSL and return lightness (0-100)
     hexToHSL(hex) {
-      // Remove # and convert to RGB
       let r = 0
       let g = 0
       let b = 0
@@ -324,12 +321,10 @@ export default {
       g /= 255
       b /= 255
 
-      // Find min and max for lightness
       const max = Math.max(r, g, b)
       const min = Math.min(r, g, b)
       let l = (max + min) / 2
 
-      // Convert lightness to percentage
       l = l * 100
       return l
     },
@@ -341,28 +336,22 @@ export default {
           background: palette[colour].getHex()
         }))
       this.swatches = albumColours
-      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
+      this.colourPalette =
+        albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
 
-      // Set text color based on background lightness
       const lightness = this.hexToHSL(this.colourPalette.background)
       console.log('Background lightness:', lightness)
       this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff'
 
       this.setAppColours()
-    },
-
-    handleExpiredToken() {
-      console.log('Handling expired token')
-      clearInterval(this.pollPlaying)
-      this.$emit('requestRefreshToken')
     }
   }
 }
 </script>
 
 <style scoped>
-/* Styles for full-screen slideshow and text adjustments */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -390,7 +379,7 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: relative !important; /* For absolute positioning */
+  position: relative !important;
 }
 
 .now-playing--idle {
@@ -405,13 +394,13 @@ html, body {
 .now-playing__status-container {
   position: absolute;
   top: 0;
-  height: 250px; /* From screen top to album art top */
+  height: 250px;
   width: 100%;
 }
 
 .now-playing__status {
   position: absolute;
-  top: 50%; /* Center in 0–250px */
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -420,7 +409,7 @@ html, body {
 }
 
 .now-playing__status-text {
-  font-size: 4rem !important; /* Larger for icon clarity */
+  font-size: 4rem !important;
   font-weight: 400;
   color: var(--color-text-primary);
   line-height: 1;
@@ -428,21 +417,21 @@ html, body {
 
 .now-playing__cover {
   position: absolute;
-  top: 250px; /* Upper quarter */
+  top: 250px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 5;
 }
 
 .now-playing__image {
-  width: 300px; /* Spotify image size */
+  width: 300px;
   height: 300px;
   object-fit: cover;
 }
 
 .now-playing__details {
   position: absolute;
-  top: 1250px !important; /* Pushed down from 1200px */
+  top: 1250px !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   text-align: center !important;
