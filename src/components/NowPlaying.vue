@@ -235,6 +235,7 @@ export default {
         this.playerResponse.error?.status === 401 ||
         this.playerResponse.error?.status === 400
       ) {
+        console.log('API error details:', this.playerResponse.error)
         this.handleExpiredToken()
         return
       }
@@ -260,6 +261,51 @@ export default {
         this.playerData = newTrackData
         console.log('Updated playerData:', this.playerData)
         this.$emit('spotifyTrackUpdated', this.playerData)
+      }
+    },
+
+    async refreshAccessToken() {
+      try {
+        const clientId = 'YOUR_CLIENT_ID' // Replace with your Spotify client ID
+        const clientSecret = 'YOUR_CLIENT_SECRET' // Replace with your client secret
+        const response = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Authorization: 'Basic ' + btoa(`${clientId}:${clientSecret}`)
+          },
+          body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: this.auth.refreshToken
+          })
+        })
+
+        if (!response.ok) {
+          throw new Error(`Token refresh failed: ${response.status}`)
+        }
+
+        const data = await response.json()
+        this.auth.accessToken = data.access_token
+        this.auth.status = true
+        console.log('Token refreshed successfully')
+        this.setDataInterval() // Restart polling
+        return true
+      } catch (error) {
+        console.error('Token refresh error:', error)
+        this.auth.status = false
+        this.$emit('authFailed')
+        return false
+      }
+    },
+
+    async handleExpiredToken() {
+      console.log('Handling expired token, auth:', this.auth)
+      clearInterval(this.pollPlaying)
+      const refreshed = await this.refreshAccessToken()
+      if (!refreshed) {
+        console.log('Redirecting to login due to refresh failure')
+        // Optionally emit to parent for login redirect
+        this.$emit('authFailed')
       }
     },
 
