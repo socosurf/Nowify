@@ -25,12 +25,14 @@
       </div>
     </div>
     <div v-else class="now-playing now-playing--idle">
-      <iframe
-        :src="weatherUrl"
-        class="now-playing__weather-iframe"
-        title="Weather Display"
-        frameborder="0"
-      ></iframe>
+      <transition-group name="fade" tag="div" class="idle-image-container">
+        <img
+          :key="currentImageIndex"
+          :src="idleImages[currentImageIndex]"
+          alt="No music playing"
+          class="now-playing__idle-image"
+        />
+      </transition-group>
     </div>
   </div>
 </template>
@@ -55,7 +57,15 @@ export default {
       playerData: this.getEmptyPlayer(),
       colourPalette: '',
       swatches: [],
-      weatherUrl: 'https://weatherstar.netbymatt.com/?hazards-checkbox=true&current-weather-checkbox=true&latest-observations-checkbox=false&hourly-checkbox=false&hourly-graph-checkbox=false&travel-checkbox=false&regional-forecast-checkbox=true&local-forecast-checkbox=true&extended-forecast-checkbox=true&almanac-checkbox=true&spc-outlook-checkbox=true&radar-checkbox=true&settings-wide-checkbox=false&settings-kiosk-checkbox=false&settings-scanLines-checkbox=false&settings-speed-select=1.25&settings-units-select=us&latLonQuery=Pottstown%2C+PA%2C+USA&latLon=%7B%22lat%22%3A40.2492%2C%22lon%22%3A-75.6467%7D'
+      idleImages: [
+        require('@/assets/no-music-1.jpg'),
+        require('@/assets/no-music-2.jpg'),
+        require('@/assets/no-music-3.jpg'),
+        require('@/assets/no-music-4.jpg'),
+        require('@/assets/no-music-5.jpg')
+      ],
+      currentImageIndex: 0,
+      imageCycleInterval: null
     }
   },
 
@@ -73,9 +83,15 @@ export default {
     player: {
       handler(newPlayer) {
         if (newPlayer && newPlayer.trackTitle) {
-          console.log('Music is playing, showing track details')
+          if (this.imageCycleInterval) {
+            clearInterval(this.imageCycleInterval)
+            this.imageCycleInterval = null
+            console.log('Stopped image cycling')
+          }
         } else {
-          console.log('No music playing, showing weather iframe')
+          if (!this.imageCycleInterval) {
+            this.startImageCycle()
+          }
         }
       },
       deep: true
@@ -101,13 +117,28 @@ export default {
   mounted() {
     console.log('NowPlaying mounted')
     this.setDataInterval()
+    if (!(this.player && this.player.trackTitle)) {
+      this.startImageCycle()
+    }
   },
 
   beforeDestroy() {
     clearInterval(this.pollPlaying)
+    if (this.imageCycleInterval) {
+      clearInterval(this.imageCycleInterval)
+    }
   },
 
   methods: {
+    startImageCycle() {
+      if (this.idleImages.length === 0) return
+      this.imageCycleInterval = setInterval(() => {
+        this.currentImageIndex = (this.currentImageIndex + 1) % this.idleImages.length
+        console.log('Cycled to image index:', this.currentImageIndex)
+      }, 60000) // Change every 60 seconds
+      console.log('Started image cycling')
+    },
+
     async getNowPlaying() {
       let data = {}
       try {
@@ -140,7 +171,9 @@ export default {
         this.handleExpiredToken()
         data = this.getEmptyPlayer()
         this.playerData = data
-        this.$emit('spotifyTrackUpdated', data)
+        this
+
+.$emit('spotifyTrackUpdated', data)
       }
     },
 
@@ -274,6 +307,7 @@ export default {
       }
     },
 
+    // Convert hex to HSL and return lightness (0-100)
     hexToHSL(hex) {
       let r = 0
       let g = 0
@@ -427,7 +461,7 @@ body {
   width: 100%;
 }
 
-.now-playing__weather-iframe {
+.idle-image-container {
   width: 1080px;
   height: 1920px;
   min-width: 1080px;
@@ -437,7 +471,32 @@ body {
   left: 0;
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.now-playing__idle-image {
+  width: 1080px;
+  height: 1920px;
+  min-width: 1080px;
+  min-height: 1920px;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
   border: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 2s ease-in-out;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
 
