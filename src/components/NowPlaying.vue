@@ -8,16 +8,7 @@
     >
       <div class="background-overlay"></div>
 
-      <!-- Play/Pause indicator -->
-      <div class="now-playing__status-container">
-        <div class="now-playing__status">
-          <span class="now-playing__status-text">
-            {{ playerResponse.is_playing ? '▶' : '❚ ❚' }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Title + Artist -->
+      <!-- Title + Artist – perfectly centered -->
       <div class="now-playing__details">
         <h1 class="now-playing__track" v-text="formattedTrackTitle"></h1>
         <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
@@ -90,22 +81,14 @@ export default {
       deep: true
     },
     auth(newVal) {
-      if (newVal.status === false) {
-        clearInterval(this.pollPlaying)
-      }
+      if (newVal.status === false) clearInterval(this.pollPlaying)
     },
-    playerResponse() {
-      this.handleNowPlaying()
-    },
-    playerData() {
-      this.getAlbumColours()
-    }
+    playerResponse() { this.handleNowPlaying() },
+    playerData() { this.getAlbumColours() }
   },
   mounted() {
     this.setDataInterval()
-    if (!(this.player && this.player.trackTitle)) {
-      this.startImageCycle()
-    }
+    if (!(this.player && this.player.trackTitle)) this.startImageCycle()
   },
   beforeDestroy() {
     clearInterval(this.pollPlaying)
@@ -128,18 +111,15 @@ export default {
         if (!response.ok) throw new Error(`Error: ${response.status}`)
         if (response.status === 204) {
           data = this.getEmptyPlayer()
-          this.playerData = data
-          this.$emit('spotifyTrackUpdated', data)
-          return
+        } else {
+          data = await response.json()
         }
-        data = await response.json()
         this.playerResponse = data
       } catch (error) {
         console.error('getNowPlaying error:', error)
         this.handleExpiredToken()
-        data = this.getEmptyPlayer()
-        this.playerData = data
-        this.$emit('spotifyTrackUpdated', data)
+        this.playerData = this.getEmptyPlayer()
+        this.$emit('spotifyTrackUpdated', this.playerData)
       }
     },
     getAlbumColours() {
@@ -187,7 +167,7 @@ export default {
       }
     },
     async refreshAccessToken() {
-      // ... your existing token refresh logic (unchanged)
+      // ← your existing refresh logic stays unchanged
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -202,14 +182,12 @@ export default {
         b = parseInt(hex.slice(5, 7), 16) / 255
       }
       const max = Math.max(r, g, b), min = Math.min(r, g, b)
-      let l = (max + min) / 2
-      return l * 100
+      return ((max + min) / 2) * 100
     },
     handleAlbumPalette(palette) {
       const albumColours = Object.values(palette)
         .filter(Boolean)
         .map(c => ({ background: c.getHex() }))
-      this.swatches = albumColours
       this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
       const lightness = this.hexToHSL(this.colourPalette.background)
       this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff'
@@ -241,7 +219,7 @@ html, body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-/* Active: Full-screen album art + blur */
+/* Full-screen heavily blurred album art */
 .now-playing--active {
   width: 100%;
   height: 100%;
@@ -252,73 +230,57 @@ html, body {
   overflow: hidden;
 }
 
+/* Much stronger blur + darker overlay */
 .background-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.6);           /* darker tint */
+  backdrop-filter: blur(30px);              /* heavily blurred */
+  -webkit-backdrop-filter: blur(30px);
   z-index: 1;
 }
 
-/* Play/Pause icon (top) */
-.now-playing__status-container {
-  position: absolute;
-  top: 40px;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  z-index: 10;
-}
-.now-playing__status-text {
-  font-size: 80px;
-  color: white;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
-}
-
-/* Title & Artist (bottom area) */
+/* Title & Artist – dead center of the screen */
 .now-playing__details {
   position: absolute;
-  bottom: 100px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
+  transform: translate(-50%, -50%);
   text-align: center;
+  width: 90%;
+  max-width: 900px;
   z-index: 10;
   padding: 0 40px;
   box-sizing: border-box;
 }
+
 .now-playing__track {
-  font-size: 68px;
+  font-size: 82px;               /* big and bold */
   font-weight: 700;
-  line-height: 1.2;
-  margin: 0 0 20px 0;
+  line-height: 1.15;
+  margin: 0 0 24px 0;
   color: white;
-  text-shadow: 0 4px 20px rgba(0,0,0,0.9);
+  text-shadow: 0 4px 30px rgba(0,0,0,0.9);
   word-wrap: break-word;
 }
+
 .now-playing__artists {
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 400;
   line-height: 1.3;
   margin: 0;
-  color: rgba(255,255,255,0.95);
-  text-shadow: 0 3px 15px rgba(0,0,0,0.8);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 3px 20px rgba(0,0,0,0.8);
 }
 
-/* Idle state */
+/* Idle state – full screen images */
 .now-playing--idle {
   width: 100%;
   height: 100%;
   position: relative;
   overflow: hidden;
 }
-.idle-image-container {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0; left: 0;
-}
+.idle-image-container,
 .now-playing__idle-image {
   width: 100%;
   height: 100%;
@@ -331,5 +293,4 @@ html, body {
 .fade-enter-active, .fade-leave-active { transition: opacity 2s ease-in-out; }
 .fade-enter, .fade-leave-to { opacity: 0; }
 </style>
-
 <style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
