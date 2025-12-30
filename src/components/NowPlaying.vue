@@ -1,16 +1,21 @@
 <template>
   <div id="app">
-    <!-- NOW PLAYING -->
+    <!-- NOW PLAYING - Show if we have a track title (most reliable check) -->
     <div
-      v-if="playerData && playerData.trackTitle"
+      v-if="hasTrack"
       class="now-playing now-playing--active"
-      :style="{ backgroundImage: 'url(' + playerData.trackAlbum.image + ')' }"
+      :style="{ backgroundImage: albumArtUrl ? 'url(' + albumArtUrl + ')' : '' }"
     >
       <div class="background-overlay"></div>
 
       <div class="now-playing__details">
-        <h1 class="now-playing__track" v-text="playerData.trackTitle"></h1>
-        <h2 class="now-playing__artists" v-text="trackArtistsJoined"></h2>
+        <h1 class="now-playing__track">{{ playerData.trackTitle }}</h1>
+        <h2 class="now-playing__artists">{{ trackArtistsJoined }}</h2>
+      </div>
+
+      <!-- Tiny debug text - remove this block when confirmed working -->
+      <div class="debug-info">
+        DEBUG: "{{ playerData.trackTitle }}" by {{ trackArtistsJoined }}
       </div>
     </div>
 
@@ -58,15 +63,19 @@ export default {
     }
   },
   computed: {
+    hasTrack() {
+      return this.playerData && this.playerData.trackTitle && this.playerData.trackTitle.trim() !== ''
+    },
+    albumArtUrl() {
+      return this.playerData?.trackAlbum?.image || ''
+    },
     trackArtistsJoined() {
       return this.playerData.trackArtists ? this.playerData.trackArtists.join(', ') : ''
     }
   },
   watch: {
-    // Watch playerData for track changes (idle cycling) AND colour extraction
     playerData: {
       handler(newData) {
-        // Handle idle image cycling
         if (newData && newData.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
@@ -75,8 +84,6 @@ export default {
         } else {
           if (!this.imageCycleInterval) this.startImageCycle()
         }
-
-        // Extract album colours when track changes
         this.getAlbumColours()
       },
       deep: true
@@ -90,7 +97,7 @@ export default {
   },
   mounted() {
     this.setDataInterval()
-    if (!(this.playerData && this.playerData.trackTitle)) this.startImageCycle()
+    if (!this.hasTrack) this.startImageCycle()
   },
   beforeDestroy() {
     clearInterval(this.pollPlaying)
@@ -124,18 +131,18 @@ export default {
       }
     },
     getAlbumColours() {
-      if (!this.playerData?.trackAlbum?.image) return
-      Vibrant.from(this.playerData.trackAlbum.image)
+      if (!this.albumArtUrl) return
+      Vibrant.from(this.albumArtUrl)
         .quality(1)
         .clearFilters()
         .getPalette()
         .then(palette => this.handleAlbumPalette(palette))
         .catch(() => {
-          // Silent fail on vibrant error
+          // Silent fail
         })
     },
     getEmptyPlayer() {
-      return { trackAlbum: {}, trackArtists: [], trackId: '', trackTitle: '' }
+      return { trackAlbum: { image: '' }, trackArtists: [], trackId: '', trackTitle: '' }
     },
     setDataInterval() {
       clearInterval(this.pollPlaying)
@@ -144,11 +151,11 @@ export default {
     setAppColours() {
       document.documentElement.style.setProperty(
         '--color-text-primary',
-        this.colourPalette.text
+        this.colourPalette.text || '#ffffff'
       )
       document.documentElement.style.setProperty(
         '--colour-background-now-playing',
-        this.colourPalette.background
+        this.colourPalette.background || '#000000'
       )
     },
     handleNowPlaying() {
@@ -166,7 +173,7 @@ export default {
       }
       const newTrackData = {
         trackArtists: this.playerResponse.item.artists.map(a => a.name),
-        trackTitle: this.playerResponse.item.name,
+        trackTitle: this.playerResponse.item.name || 'Unknown Track',
         trackId: this.playerResponse.item.id,
         trackAlbum: {
           title: this.playerResponse.item.album.name,
@@ -179,7 +186,7 @@ export default {
       }
     },
     async refreshAccessToken() {
-      // ← Keep your existing refresh logic here unchanged
+      // ← Your existing refresh logic
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -190,7 +197,7 @@ export default {
       let r = 0,
         g = 0,
         b = 0
-      if (hex.length === 7) {
+      if (hex && hex.length === 7) {
         r = parseInt(hex.slice(1, 3), 16) / 255
         g = parseInt(hex.slice(3, 5), 16) / 255
         b = parseInt(hex.slice(5, 7), 16) / 255
@@ -291,6 +298,21 @@ body {
   margin: 0;
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
+}
+
+/* Tiny debug text - remove when working */
+.debug-info {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  font-size: 20px;
+  color: yellow;
+  background: rgba(0,0,0,0.5);
+  padding: 10px;
+  border-radius: 8px;
+  z-index: 20;
+  max-width: 90%;
+  word-wrap: break-word;
 }
 
 .now-playing--idle,
