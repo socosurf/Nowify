@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- NOW PLAYING - Uses playerData (populated from API) -->
+    <!-- NOW PLAYING -->
     <div
       v-if="playerData && playerData.trackTitle"
       class="now-playing now-playing--active"
@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <!-- IDLE - No music playing -->
+    <!-- IDLE -->
     <div v-else class="now-playing now-playing--idle">
       <transition-group name="fade" tag="div" class="idle-image-container">
         <img
@@ -63,8 +63,10 @@ export default {
     }
   },
   watch: {
+    // Watch playerData for track changes (idle cycling) AND colour extraction
     playerData: {
       handler(newData) {
+        // Handle idle image cycling
         if (newData && newData.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
@@ -73,17 +75,17 @@ export default {
         } else {
           if (!this.imageCycleInterval) this.startImageCycle()
         }
+
+        // Extract album colours when track changes
+        this.getAlbumColours()
       },
       deep: true
-    },
-    auth(newVal) {
-      if (newVal.status === false) clearInterval(this.pollPlaying)
     },
     playerResponse() {
       this.handleNowPlaying()
     },
-    playerData() {
-      this.getAlbumColours()
+    auth(newVal) {
+      if (newVal.status === false) clearInterval(this.pollPlaying)
     }
   },
   mounted() {
@@ -116,7 +118,6 @@ export default {
         }
         this.playerResponse = data
       } catch (error) {
-        console.error('getNowPlaying error:', error)
         this.handleExpiredToken()
         this.playerData = this.getEmptyPlayer()
         this.$emit('spotifyTrackUpdated', this.playerData)
@@ -129,7 +130,9 @@ export default {
         .clearFilters()
         .getPalette()
         .then(palette => this.handleAlbumPalette(palette))
-        .catch(err => console.error('Vibrant error:', err))
+        .catch(() => {
+          // Silent fail on vibrant error
+        })
     },
     getEmptyPlayer() {
       return { trackAlbum: {}, trackArtists: [], trackId: '', trackTitle: '' }
@@ -139,11 +142,20 @@ export default {
       this.pollPlaying = setInterval(() => this.getNowPlaying(), 2500)
     },
     setAppColours() {
-      document.documentElement.style.setProperty('--color-text-primary', this.colourPalette.text)
-      document.documentElement.style.setProperty('--colour-background-now-playing', this.colourPalette.background)
+      document.documentElement.style.setProperty(
+        '--color-text-primary',
+        this.colourPalette.text
+      )
+      document.documentElement.style.setProperty(
+        '--colour-background-now-playing',
+        this.colourPalette.background
+      )
     },
     handleNowPlaying() {
-      if (this.playerResponse.error?.status === 401 || this.playerResponse.error?.status === 400) {
+      if (
+        this.playerResponse.error?.status === 401 ||
+        this.playerResponse.error?.status === 400
+      ) {
         this.handleExpiredToken()
         return
       }
@@ -167,7 +179,7 @@ export default {
       }
     },
     async refreshAccessToken() {
-      // ← Your existing token refresh logic (keep unchanged)
+      // ← Keep your existing refresh logic here unchanged
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -175,18 +187,26 @@ export default {
       if (!refreshed) this.$emit('authFailed')
     },
     hexToHSL(hex) {
-      let r = 0, g = 0, b = 0
+      let r = 0,
+        g = 0,
+        b = 0
       if (hex.length === 7) {
         r = parseInt(hex.slice(1, 3), 16) / 255
         g = parseInt(hex.slice(3, 5), 16) / 255
         b = parseInt(hex.slice(5, 7), 16) / 255
       }
-      const max = Math.max(r, g, b), min = Math.min(r, g, b)
+      const max = Math.max(r, g, b),
+        min = Math.min(r, g, b)
       return ((max + min) / 2) * 100
     },
     handleAlbumPalette(palette) {
-      const albumColours = Object.values(palette).filter(Boolean).map(c => ({ background: c.getHex() }))
-      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
+      const albumColours = Object.values(palette)
+        .filter(Boolean)
+        .map(c => ({ background: c.getHex() }))
+      this.colourPalette =
+        albumColours[Math.floor(Math.random() * albumColours.length)] || {
+          background: '#000000'
+        }
       const lightness = this.hexToHSL(this.colourPalette.background)
       this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff'
       this.setAppColours()
@@ -196,7 +216,8 @@ export default {
 </script>
 
 <style scoped>
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -217,7 +238,6 @@ html, body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-/* Full uncropped album art with letterboxing */
 .now-playing--active {
   width: 100%;
   height: 100%;
@@ -231,7 +251,10 @@ html, body {
 
 .background-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
@@ -257,7 +280,7 @@ html, body {
   line-height: 1.15;
   margin: 0 0 24px 0;
   color: white;
-  text-shadow: 0 4px 30px rgba(0,0,0,0.95);
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.95);
   word-wrap: break-word;
 }
 
@@ -266,11 +289,10 @@ html, body {
   font-weight: 400;
   line-height: 1.3;
   margin: 0;
-  color: rgba(255,255,255,0.95);
-  text-shadow: 0 3px 20px rgba(0,0,0,0.9);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
 }
 
-/* Idle state */
 .now-playing--idle,
 .idle-image-container,
 .now-playing__idle-image {
@@ -282,10 +304,13 @@ html, body {
   object-fit: cover;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 2s ease-in-out;
 }
-.fade-enter, .fade-leave-to {
+
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 </style>
