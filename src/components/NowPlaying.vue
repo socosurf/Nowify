@@ -1,21 +1,16 @@
 <template>
   <div id="app">
-    <!-- NOW PLAYING - Shows if we have a title -->
+    <!-- NOW PLAYING - Uses the 'player' prop (this is what your parent passes and what worked before) -->
     <div
-      v-if="hasTrack"
+      v-if="player && player.trackTitle"
       class="now-playing now-playing--active"
-      :style="{ backgroundImage: albumArtUrl ? 'url(' + albumArtUrl + ')' : '' }"
+      :style="{ backgroundImage: 'url(' + player.trackAlbum.image + ')' }"
     >
       <div class="background-overlay"></div>
 
       <div class="now-playing__details">
-        <h1 class="now-playing__track">{{ playerData.trackTitle }}</h1>
-        <h2 class="now-playing__artists">{{ trackArtistsJoined }}</h2>
-      </div>
-
-      <!-- DEBUG OVERLAY - Remove this whole div when confirmed working -->
-      <div class="debug-info">
-        DEBUG: Playing "{{ playerData.trackTitle }}" by {{ trackArtistsJoined }}
+        <h1 class="now-playing__track" v-text="player.trackTitle"></h1>
+        <h2 class="now-playing__artists" v-text="trackArtistsJoined"></h2>
       </div>
     </div>
 
@@ -42,15 +37,14 @@ export default {
   props: {
     auth: props.auth,
     endpoints: props.endpoints,
-    player: props.player
+    player: props.player  // ← This is the key: your parent updates this prop directly
   },
   data() {
     return {
       pollPlaying: '',
       playerResponse: {},
-      playerData: this.getEmptyPlayer(),
+      playerData: this.getEmptyPlayer(), // kept for internal API polling, but not used for display
       colourPalette: '',
-      swatches: [],
       idleImages: [
         require('@/assets/no-music-1.jpg'),
         require('@/assets/no-music-2.jpg'),
@@ -63,20 +57,15 @@ export default {
     }
   },
   computed: {
-    hasTrack() {
-      return this.playerData && this.playerData.trackTitle && this.playerData.trackTitle.trim() !== ''
-    },
-    albumArtUrl() {
-      return this.playerData?.trackAlbum?.image || ''
-    },
     trackArtistsJoined() {
-      return this.playerData.trackArtists ? this.playerData.trackArtists.join(', ') : ''
+      return this.player && this.player.trackArtists ? this.player.trackArtists.join(', ') : ''
     }
   },
   watch: {
-    playerData: {
-      handler(newData) {
-        if (newData && newData.trackTitle) {
+    // Watch the player prop (this is what changes when a song plays)
+    player: {
+      handler(newPlayer) {
+        if (newPlayer && newPlayer.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
             this.imageCycleInterval = null
@@ -84,20 +73,22 @@ export default {
         } else {
           if (!this.imageCycleInterval) this.startImageCycle()
         }
+
+        // Extract colours from the current player prop
         this.getAlbumColours()
       },
       deep: true
     },
-    playerResponse() {
-      this.handleNowPlaying()
-    },
     auth(newVal) {
       if (newVal.status === false) clearInterval(this.pollPlaying)
+    },
+    playerResponse() {
+      this.handleNowPlaying()
     }
   },
   mounted() {
     this.setDataInterval()
-    if (!this.hasTrack) this.startImageCycle()
+    if (!(this.player && this.player.trackTitle)) this.startImageCycle()
   },
   beforeDestroy() {
     clearInterval(this.pollPlaying)
@@ -131,8 +122,8 @@ export default {
       }
     },
     getAlbumColours() {
-      if (!this.albumArtUrl) return
-      Vibrant.from(this.albumArtUrl)
+      if (!this.player?.trackAlbum?.image) return
+      Vibrant.from(this.player.trackAlbum.image)
         .quality(1)
         .clearFilters()
         .getPalette()
@@ -160,7 +151,6 @@ export default {
         this.$emit('spotifyTrackUpdated', this.playerData)
         return
       }
-      // ALWAYS update playerData when we have a valid item
       const newTrackData = {
         trackArtists: this.playerResponse.item.artists.map(a => a.name),
         trackTitle: this.playerResponse.item.name || 'Unknown Track',
@@ -170,11 +160,14 @@ export default {
           image: this.playerResponse.item.album.images[0]?.url || ''
         }
       }
-      this.playerData = newTrackData
-      this.$emit('spotifyTrackUpdated', this.playerData)
+      // Emit to parent — parent will update the 'player' prop we rely on
+      if (newTrackData.trackId !== this.playerData.trackId) {
+        this.playerData = newTrackData
+        this.$emit('spotifyTrackUpdated', this.playerData)
+      }
     },
     async refreshAccessToken() {
-      // ← Your existing refresh logic unchanged
+      // ← Your existing refresh logic (keep unchanged)
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -205,7 +198,6 @@ export default {
 </script>
 
 <style scoped>
-/* ← All your previous styles unchanged (container, background-size: contain, blur, centered text, etc.) */
 html,
 body {
   margin: 0;
@@ -228,6 +220,7 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+/* Full uncropped album art on 4:3 screen */
 .now-playing--active {
   width: 100%;
   height: 100%;
@@ -241,10 +234,7 @@ body {
 
 .background-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
@@ -283,20 +273,7 @@ body {
   text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
 }
 
-.debug-info {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  font-size: 20px;
-  color: yellow;
-  background: rgba(0,0,0,0.6);
-  padding: 10px 15px;
-  border-radius: 8px;
-  z-index: 20;
-  max-width: 90%;
-  word-wrap: break-word;
-}
-
+/* Idle state */
 .now-playing--idle,
 .idle-image-container,
 .now-playing__idle-image {
