@@ -1,20 +1,20 @@
 <template>
   <div id="app">
-    <!-- NOW PLAYING -->
+    <!-- NOW PLAYING - Uses playerData (populated from API) -->
     <div
-      v-if="player && player.trackTitle"
+      v-if="playerData && playerData.trackTitle"
       class="now-playing now-playing--active"
-      :style="{ backgroundImage: 'url(' + player.trackAlbum.image + ')' }"
+      :style="{ backgroundImage: 'url(' + playerData.trackAlbum.image + ')' }"
     >
       <div class="background-overlay"></div>
 
       <div class="now-playing__details">
-        <h1 class="now-playing__track" v-text="formattedTrackTitle"></h1>
-        <h2 class="now-playing__artists" v-text="getTrackArtists"></h2>
+        <h1 class="now-playing__track" v-text="playerData.trackTitle"></h1>
+        <h2 class="now-playing__artists" v-text="trackArtistsJoined"></h2>
       </div>
     </div>
 
-    <!-- IDLE -->
+    <!-- IDLE - No music playing -->
     <div v-else class="now-playing now-playing--idle">
       <transition-group name="fade" tag="div" class="idle-image-container">
         <img
@@ -58,17 +58,14 @@ export default {
     }
   },
   computed: {
-    getTrackArtists() {
-      return this.player.trackArtists.join(', ')
-    },
-    formattedTrackTitle() {
-      return this.player?.trackTitle || ''
+    trackArtistsJoined() {
+      return this.playerData.trackArtists ? this.playerData.trackArtists.join(', ') : ''
     }
   },
   watch: {
-    player: {
-      handler(newPlayer) {
-        if (newPlayer && newPlayer.trackTitle) {
+    playerData: {
+      handler(newData) {
+        if (newData && newData.trackTitle) {
           if (this.imageCycleInterval) {
             clearInterval(this.imageCycleInterval)
             this.imageCycleInterval = null
@@ -82,12 +79,16 @@ export default {
     auth(newVal) {
       if (newVal.status === false) clearInterval(this.pollPlaying)
     },
-    playerResponse() { this.handleNowPlaying() },
-    playerData() { this.getAlbumColours() }
+    playerResponse() {
+      this.handleNowPlaying()
+    },
+    playerData() {
+      this.getAlbumColours()
+    }
   },
   mounted() {
     this.setDataInterval()
-    if (!(this.player && this.player.trackTitle)) this.startImageCycle()
+    if (!(this.playerData && this.playerData.trackTitle)) this.startImageCycle()
   },
   beforeDestroy() {
     clearInterval(this.pollPlaying)
@@ -122,8 +123,8 @@ export default {
       }
     },
     getAlbumColours() {
-      if (!this.player?.trackAlbum?.image) return
-      Vibrant.from(this.player.trackAlbum.image)
+      if (!this.playerData?.trackAlbum?.image) return
+      Vibrant.from(this.playerData.trackAlbum.image)
         .quality(1)
         .clearFilters()
         .getPalette()
@@ -166,7 +167,7 @@ export default {
       }
     },
     async refreshAccessToken() {
-      // ← keep your existing refresh logic exactly as it was
+      // ← Your existing token refresh logic (keep unchanged)
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -216,14 +217,14 @@ html, body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-/* THIS IS THE KEY CHANGE → contain instead of cover */
+/* Full uncropped album art with letterboxing */
 .now-playing--active {
   width: 100%;
   height: 100%;
-  background-size: contain;        /* ← Full square album art visible */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #000;         /* black bars on top/bottom */
+  background-color: #000;
   position: relative;
   overflow: hidden;
 }
@@ -281,8 +282,12 @@ html, body {
   object-fit: cover;
 }
 
-.fade-enter-active, .fade-leave-active { transition: opacity 2s ease-in-out; }
-.fade-enter, .fade-leave-to { opacity: 0; }
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 2s ease-in-out;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
 </style>
 
 <style src="@/styles/components/now-playing.scss" lang="scss" scoped></style>
