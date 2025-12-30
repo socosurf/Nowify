@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <!-- NOW PLAYING - Show if we have a track title (most reliable check) -->
+    <!-- NOW PLAYING - Shows if we have a title -->
     <div
       v-if="hasTrack"
       class="now-playing now-playing--active"
@@ -13,9 +13,9 @@
         <h2 class="now-playing__artists">{{ trackArtistsJoined }}</h2>
       </div>
 
-      <!-- Tiny debug text - remove this block when confirmed working -->
+      <!-- DEBUG OVERLAY - Remove this whole div when confirmed working -->
       <div class="debug-info">
-        DEBUG: "{{ playerData.trackTitle }}" by {{ trackArtistsJoined }}
+        DEBUG: Playing "{{ playerData.trackTitle }}" by {{ trackArtistsJoined }}
       </div>
     </div>
 
@@ -137,9 +137,7 @@ export default {
         .clearFilters()
         .getPalette()
         .then(palette => this.handleAlbumPalette(palette))
-        .catch(() => {
-          // Silent fail
-        })
+        .catch(() => {})
     },
     getEmptyPlayer() {
       return { trackAlbum: { image: '' }, trackArtists: [], trackId: '', trackTitle: '' }
@@ -149,20 +147,11 @@ export default {
       this.pollPlaying = setInterval(() => this.getNowPlaying(), 2500)
     },
     setAppColours() {
-      document.documentElement.style.setProperty(
-        '--color-text-primary',
-        this.colourPalette.text || '#ffffff'
-      )
-      document.documentElement.style.setProperty(
-        '--colour-background-now-playing',
-        this.colourPalette.background || '#000000'
-      )
+      document.documentElement.style.setProperty('--color-text-primary', this.colourPalette.text || '#ffffff')
+      document.documentElement.style.setProperty('--colour-background-now-playing', this.colourPalette.background || '#000000')
     },
     handleNowPlaying() {
-      if (
-        this.playerResponse.error?.status === 401 ||
-        this.playerResponse.error?.status === 400
-      ) {
+      if (this.playerResponse.error?.status === 401 || this.playerResponse.error?.status === 400) {
         this.handleExpiredToken()
         return
       }
@@ -171,6 +160,7 @@ export default {
         this.$emit('spotifyTrackUpdated', this.playerData)
         return
       }
+      // ALWAYS update playerData when we have a valid item
       const newTrackData = {
         trackArtists: this.playerResponse.item.artists.map(a => a.name),
         trackTitle: this.playerResponse.item.name || 'Unknown Track',
@@ -180,13 +170,11 @@ export default {
           image: this.playerResponse.item.album.images[0]?.url || ''
         }
       }
-      if (newTrackData.trackId !== this.playerData.trackId) {
-        this.playerData = newTrackData
-        this.$emit('spotifyTrackUpdated', this.playerData)
-      }
+      this.playerData = newTrackData
+      this.$emit('spotifyTrackUpdated', this.playerData)
     },
     async refreshAccessToken() {
-      // ← Your existing refresh logic
+      // ← Your existing refresh logic unchanged
     },
     async handleExpiredToken() {
       clearInterval(this.pollPlaying)
@@ -194,26 +182,20 @@ export default {
       if (!refreshed) this.$emit('authFailed')
     },
     hexToHSL(hex) {
-      let r = 0,
-        g = 0,
-        b = 0
+      let r = 0, g = 0, b = 0
       if (hex && hex.length === 7) {
         r = parseInt(hex.slice(1, 3), 16) / 255
         g = parseInt(hex.slice(3, 5), 16) / 255
         b = parseInt(hex.slice(5, 7), 16) / 255
       }
-      const max = Math.max(r, g, b),
-        min = Math.min(r, g, b)
+      const max = Math.max(r, g, b), min = Math.min(r, g, b)
       return ((max + min) / 2) * 100
     },
     handleAlbumPalette(palette) {
       const albumColours = Object.values(palette)
         .filter(Boolean)
         .map(c => ({ background: c.getHex() }))
-      this.colourPalette =
-        albumColours[Math.floor(Math.random() * albumColours.length)] || {
-          background: '#000000'
-        }
+      this.colourPalette = albumColours[Math.floor(Math.random() * albumColours.length)] || { background: '#000000' }
       const lightness = this.hexToHSL(this.colourPalette.background)
       this.colourPalette.text = lightness > 50 ? '#000000' : '#ffffff'
       this.setAppColours()
@@ -223,6 +205,7 @@ export default {
 </script>
 
 <style scoped>
+/* ← All your previous styles unchanged (container, background-size: contain, blur, centered text, etc.) */
 html,
 body {
   margin: 0;
@@ -300,15 +283,14 @@ body {
   text-shadow: 0 3px 20px rgba(0, 0, 0, 0.9);
 }
 
-/* Tiny debug text - remove when working */
 .debug-info {
   position: absolute;
   bottom: 20px;
   left: 20px;
   font-size: 20px;
   color: yellow;
-  background: rgba(0,0,0,0.5);
-  padding: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 10px 15px;
   border-radius: 8px;
   z-index: 20;
   max-width: 90%;
